@@ -1,4 +1,4 @@
-vim.o.mouse             = ''        -- disable the mouse
+vim.o.mouse             = 'a'       -- enable the mouse
 vim.o.exrc              = false     -- ignore '~/.exrc'
 vim.o.secure            = true
 vim.o.modelines         = 1         -- read a modeline at EOF
@@ -30,12 +30,15 @@ vim.o.sidescrolloff     = 5         -- min number of cols to keep between cursor
 vim.o.textwidth         = 78        -- max inserted text width for paste operations
 vim.o.linespace         = 0         -- font spacing
 vim.o.ruler             = true      -- show line,col at the cursor pos
-vim.o.number            = true      -- show absolute line no. at the cursor pos
-vim.o.relativenumber    = true      -- otherwise, show relative numbers in the ruler
+-- relative line numbering
+-- number and relativenumber are window options. So doing vim.o.relativenumber = true
+-- will not work
+vim.wo.relativenumber = true
+-- but we don't want pure relative line numbering. The line where the cursor is
+-- should show absolute line number
+vim.wo.number = true
 vim.o.cursorline        = true      -- Show a line where the current cursor is
 vim.wo.signcolumn       = 'yes'     -- Show sign column as first column
-vim.g.colorcolumn       = 81        -- mark column 81
-vim.o.colorcolumn       = string.format(vim.g.colorcolumn)
 vim.o.wrap              = true      -- wrap long lines
 vim.o.breakindent       = true      -- start wrapped lines indented
 vim.o.linebreak         = true      -- do not break words on line wrap
@@ -115,7 +118,7 @@ vim.o.foldmethod        = 'indent'  -- fold based on indent level
 
 vim.o.undofile          = false     -- no undo file
 vim.o.hidden            = true      -- do not unload buffer when abandoned
-vim.o.autochdir         = false     -- do not change dir when opening a file
+vim.o.autochdir         = true      -- change dir when opening a file
 
 vim.o.magic             = true      --  use 'magic' chars in search patterns
 vim.o.hlsearch          = true      -- highlight all text matching current search pattern
@@ -222,10 +225,10 @@ vim.g.markdown_fenced_languages = {
   'json',
 }
 
--- Map leader to <space>
+-- Map leader to <,,>
 -- vim.api.nvim_set_keymap('', '<Space>', '<Nop>', { noremap = true, silent=true})
-vim.g.mapleader      = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader      = ',,'
+vim.g.maplocalleader = ',,'
 
 -- We do this to prevent the loading of the system fzf.vim plugin. This is
 -- present at least on Arch/Manjaro/Void
