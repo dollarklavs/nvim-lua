@@ -5,7 +5,44 @@ function _G.dump(...)
   print(unpack(objects))
 end
 
+function _G.reload(package)
+    package.loaded[package] = nil
+    return require(package)
+end
+
 local M = {}
+
+M._if = function(bool, a, b)
+    if bool then
+        return a
+    else
+        return b
+    end
+end
+
+function M._echo_multiline(msg)
+  for _, s in ipairs(vim.fn.split(msg, "\n")) do
+    vim.cmd("echom '" .. s:gsub("'", "''").."'")
+  end
+end
+
+function M.info(msg)
+  vim.cmd('echohl Directory')
+  M._echo_multiline(msg)
+  vim.cmd('echohl None')
+end
+
+function M.warn(msg)
+  vim.cmd('echohl WarningMsg')
+  M._echo_multiline(msg)
+  vim.cmd('echohl None')
+end
+
+function M.err(msg)
+  vim.cmd('echohl ErrorMsg')
+  M._echo_multiline(msg)
+  vim.cmd('echohl None')
+end
 
 function M.has_neovim_v05()
   if vim.fn.has('nvim-0.5') == 1 then
@@ -26,10 +63,19 @@ function M.is_darwin()
   return not not string.find(output[1] or "", "Darwin") ]]
 end
 
+function M.shell_error()
+  return vim.v.shell_error ~= 0
+end
+
 function M.shell_type(file)
   vim.fn.system(string.format("type '%s'", file))
   if vim.v.shell_error ~= 0 then return false
   else return true end
+end
+
+function M.is_git_repo()
+  vim.fn.system("git status")
+  return M._if(M.shell_error(), false, true)
 end
 
 function M.have_compiler()
@@ -42,6 +88,7 @@ function M.have_compiler()
   return false
 end
 
+-- Can also use #T ?
 function M.tablelength(T)
   local count = 0
   for _ in pairs(T) do count = count + 1 end
@@ -61,7 +108,6 @@ function M.get_visual_selection()
     if n <= 0 then return '' end
     lines[n] = string.sub(lines[n], 1, cecol)
     lines[1] = string.sub(lines[1], cscol)
-    print(n, csrow, cscol, cerow, cecol, table.concat(lines, "\n"))
     return table.concat(lines, "\n")
 end
 
@@ -82,14 +128,6 @@ function M.ensure_loaded_fnc(modules, fnc)
   end
   fnc()
 end
-
---[[
-function M.list_buffers()
-  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    print(bufnr, vim.api.nvim_buf_get_name(bufnr))
-  end
-end
-]]
 
 function M.toggle_colorcolumn()
   local wininfo = vim.fn.getwininfo()
@@ -232,6 +270,43 @@ M.resize = function(vertical, margin)
   local dir = vertical and 'vertical ' or ''
   local cmd = dir .. 'resize ' .. sign .. math.abs(margin) .. '<CR>'
   vim.cmd(cmd)
+end
+
+M.sudo_exec = function(cmd, print_output)
+  local password = vim.fn.inputsecret("Password: ")
+  if not password or #password == 0 then
+      M.warn("Invalid password, sudo aborted")
+      return false
+  end
+  local out = vim.fn.system(string.format("sudo -p '' -S %s", cmd), password)
+  if vim.v.shell_error ~= 0 then
+    print("\r\n")
+    M.err(out)
+    return false
+  end
+  if print_output then print("\r\n", out) end
+  return true
+end
+
+M.sudo_write = function(tmpfile, filepath)
+  if not tmpfile then tmpfile = vim.fn.tempname() end
+  if not filepath then filepath = vim.fn.expand("%") end
+  if not filepath or #filepath == 0 then
+    M.err("E32: No file name")
+    return
+  end
+  -- `bs=1048576` is equivalent to `bs=1M` for GNU dd or `bs=1m` for BSD dd
+  -- Both `bs=1M` and `bs=1m` are non-POSIX
+  local cmd = string.format("dd if=%s of=%s bs=1048576",
+    vim.fn.shellescape(tmpfile),
+    vim.fn.shellescape(filepath))
+  -- no need to check error as this fails the entire function
+  vim.api.nvim_exec(string.format("write! %s", tmpfile), true)
+  if M.sudo_exec(cmd) then
+    M.info(string.format('\r\n"%s" written', filepath))
+    vim.cmd("e!")
+  end
+  vim.fn.delete(tmpfile)
 end
 
 return M

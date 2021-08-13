@@ -73,7 +73,7 @@ vim.o.completeopt       = 'noinsert,menuone,noselect'
 vim.o.wildmenu          = true
 vim.o.wildmode          = 'longest:full,full'
 vim.o.wildoptions       = 'pum'     -- Show completion items using the pop-up-menu (pum)
-vim.o.pumblend          = 30        -- Give the pum some transparency
+vim.o.pumblend          = 15        -- Give the pum some transparency
 
 vim.o.joinspaces        = true      -- insert spaces after '.?!' when joining lines
 vim.o.autoindent        = true      -- copy indent from current line on newline
@@ -199,11 +199,25 @@ vim.g.loaded_node_provider    = 0
 
 -- Disable some in built plugins completely
 local disabled_built_ins = {
-  'netrw', 'netrwPlugin', 'netrwSettings', 'netrwFileHandlers',
-  'gzip', 'zip', 'zipPlugin', 'tar', 'tarPlugin', -- 'man',
-  'getscript', 'getscriptPlugin','vimball', 'vimballPlugin',
-  '2html_plugin', 'logipat', 'rrhelper', 'spellfile_plugin',
-  -- 'matchit', 'matchparen', 'shada_plugin',
+  'netrw',
+  'netrwPlugin',
+  'netrwSettings',
+  'netrwFileHandlers',
+  'gzip',
+  'zip',
+  'zipPlugin',
+  'tar',
+  'tarPlugin',
+  'getscript',
+  'getscriptPlugin',
+  'vimball',
+  'vimballPlugin',
+  '2html_plugin',
+  'logipat',
+  'rrhelper',
+  'spellfile_plugin',
+  'matchit',
+   --'matchparen',
 }
 for _, plugin in pairs(disabled_built_ins) do
   vim.g['loaded_' .. plugin] = 1
@@ -237,8 +251,8 @@ vim.api.nvim_command('set rtp-=/usr/share/vim/vimfiles')
 require 'plugins'
 require 'autocmd'
 require 'keymaps'
-require 'lsp'
 
 -- set colorscheme to modified embark
 -- https://github.com/embark-theme/vim
-pcall(vim.cmd, [[colorscheme embark]])
+vim.g.colorscheme_terminal_italics = true
+pcall(vim.cmd, [[colorscheme lua-embark]])

@@ -4,17 +4,17 @@ local remap = vim.api.nvim_set_keymap
 vim.cmd [[command! -nargs=* NvimEditInit split | edit $MYVIMRC]]
 vim.cmd [[command! -nargs=* NvimEditKeymap split | edit ~/.config/nvim/lua/keymaps.lua]]
 vim.cmd [[command! -nargs=* NvimSourceInit luafile $MYVIMRC]]
-vim.cmd [[command! -nargs=* NvimReload lua require('utils').ensure_loaded_fnc({'nvim-reload'}, function() require('nvim-reload').Reload() end)]]
-vim.cmd [[command! -nargs=* NvimRestart lua require('utils').ensure_loaded_fnc({'nvim-reload'}, function() require('nvim-reload').Restart() end)]]
+vim.cmd [[command! -nargs=* NvimReload lua require('utils').ensure_loaded_fnc({'plenary.nvim','nvim-reload'}, function() require('nvim-reload').Reload() end)]]
+vim.cmd [[command! -nargs=* NvimRestart lua require('utils').ensure_loaded_fnc({'plenary.nvim','nvim-reload'}, function() require('nvim-reload').Restart() end)]]
 
 -- Use ':Grep' or ':LGrep' to grep into quickfix|loclist
 -- without output or jumping to first match
 -- Use ':Grep <pattern> %' to search only current file
 -- Use ':Grep <pattern> %:h' to search the current file dir
 vim.cmd("command! -nargs=+ -complete=file Grep " ..
-    "lua vim.api.nvim_exec([[grep! <args> | redraw! | copen]], true)")
+    "lua vim.api.nvim_exec([[noautocmd grep! <args> | redraw! | copen]], true)")
 vim.cmd("command! -nargs=+ -complete=file LGrep " ..
-    "lua vim.api.nvim_exec([[lgrep! <args> | redraw! | lopen]], true)")
+    "lua vim.api.nvim_exec([[noautocmd lgrep! <args> | redraw! | lopen]], true)")
 
 remap('', '<leader>ei', '<Esc>:NvimEditInit<CR>',   { silent = true })
 remap('', '<leader>ek', '<Esc>:NvimEditKeymap<CR>', { silent = true })
@@ -23,13 +23,21 @@ remap('', '<leader>R',  "<Esc>:NvimReload<CR>",     { silent = true })
 -- Fix common typos
 vim.cmd([[
     cnoreabbrev W! w!
+    cnoreabbrev W1 w!
+    cnoreabbrev w1 w!
     cnoreabbrev Q! q!
+    cnoreabbrev Q1 q!
+    cnoreabbrev q1 q!
     cnoreabbrev Qa! qa!
     cnoreabbrev Qall! qall!
-    cnoreabbrev Wq wq
     cnoreabbrev Wa wa
+    cnoreabbrev Wq wq
     cnoreabbrev wQ wq
     cnoreabbrev WQ wq
+    cnoreabbrev wq1 wq!
+    cnoreabbrev Wq1 wq!
+    cnoreabbrev wQ1 wq!
+    cnoreabbrev WQ1 wq!
     cnoreabbrev W w
     cnoreabbrev Q q
     cnoreabbrev Qa qa
@@ -40,6 +48,9 @@ vim.cmd([[
 remap('n', '<C-S>', '<esc>:update<cr>', { silent = true })
 remap('v', '<C-S>', '<esc>:update<cr>', { silent = true })
 remap('i', '<C-S>', '<esc>:update<cr>', { silent = true })
+
+-- w!! to save with sudo
+remap('c', 'w!!', "<esc>:lua require'utils'.sudo_write()<CR>", { silent = true })
 
 -- Beginning and end of line in `:` command mode
 remap('c', '<C-a>', '<home>', {})
@@ -159,6 +170,9 @@ remap('n', '<leader>\'', '<Esc>:set list!<CR>',   { noremap = true, silent = tru
 remap('n', '<leader>|',
     ':execute "set colorcolumn=" . (&colorcolumn == "" ? "81" : "")<CR>', 
     { noremap = true, silent = true })
+
+-- Change current working dir (:pwd) to curent file's folder
+remap('n', '<leader>%', '<Esc>:cd %:h | pwd<CR>',   { noremap = true, silent = true })
 
 -- Map <leader>o & <leader>O to newline without insert mode
 remap('n', '<leader>o',
